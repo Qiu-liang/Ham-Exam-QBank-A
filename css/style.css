@@ -5057,6 +5057,11 @@ ul, ol {
     margin-bottom: 18px;
   }
 
+  body[data-view="practice"] .page-head,
+  body[data-view="study"] .page-head {
+    display: none;
+  }
+
   .page-actions {
     margin-top: 13px;
   }
@@ -5177,9 +5182,13 @@ ul, ol {
 
   .toolbar-left {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 9px;
-    align-items: stretch;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: end;
+  }
+
+  .toolbar-left .field:first-child {
+    min-width: 0;
   }
 
   .toolbar-right {
@@ -5195,11 +5204,19 @@ ul, ol {
   }
 
   .toolbar .segmented {
-    width: 100%;
+    width: auto;
   }
 
   .toolbar .seg-btn {
-    flex: 1;
+    flex: none;
+    min-width: 56px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .toolbar .seg-btn .icon {
+    width: 13px;
+    height: 13px;
   }
 
   .toolbar-progress {
@@ -5261,8 +5278,8 @@ ul, ol {
   }
 
   .quiz-actions {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
     padding-top: 15px;
     margin-top: 18px;
@@ -5278,7 +5295,22 @@ ul, ol {
   }
 
   .quiz-actions .btn-primary {
-    order: -1;
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .quiz-actions .btn-prev {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .quiz-actions.has-skip .btn-prev {
+    grid-column: 1;
+  }
+
+  .quiz-actions.has-skip .btn-skip {
+    grid-column: 2;
+    grid-row: 2;
   }
 
   .quiz-rail {
@@ -5312,20 +5344,35 @@ ul, ol {
   }
 
   .study-toolbar {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 9px;
-    padding: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 11px;
   }
 
-  .study-toolbar-left,
+  .study-toolbar-left {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  .study-toolbar-left .toolbar-progress {
+    display: none;
+  }
+
   .study-toolbar-right {
-    justify-content: space-between;
+    flex: none;
   }
 
   .study-toolbar .select {
     width: 100%;
     min-width: 0;
+  }
+
+  .study-toolbar .toggle-pill {
+    height: 38px;
+    padding: 0 10px;
+    font-size: 11px;
   }
 
   .study-card {
@@ -5415,7 +5462,7 @@ ul, ol {
   }
 
   .exam-card .quiz-actions {
-    display: flex;
+    display: grid;
   }
 
   .result-hero {
@@ -5707,6 +5754,15 @@ ul, ol {
 
   .exam-chip {
     padding: 0 10px;
+  }
+
+  .toolbar .seg-btn {
+    min-width: 46px;
+    padding: 0 6px;
+  }
+
+  .toolbar .seg-btn .icon {
+    display: none;
   }
 }
 

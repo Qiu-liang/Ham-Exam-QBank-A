@@ -818,10 +818,56 @@ function handleRoute() {
   closeModal();
   render();
   window.scrollTo({ top: 0, behavior: 'auto' });
+  focusCurrentQuizOnEntry();
+}
+
+/**
+ * 手机端翻到下一题时，直接把题目卡片滚到顶部（扣掉顶栏/考试栏），
+ * 避免每次都手动往下找选项；桌面端保持原来的回到页首行为。
+ */
+function scrollToQuizCard(selector) {
+  const isMobile = window.matchMedia('(max-width: 700px)').matches;
+  if (!isMobile) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  requestAnimationFrame(() => {
+    const card = document.querySelector(selector);
+    if (!card) return;
+    const topbarHeight = document.querySelector('.topbar')?.getBoundingClientRect().height || 0;
+    const examBarHeight = document.querySelector('.exam-bar')?.getBoundingClientRect().height || 0;
+    const desiredTop = topbarHeight + examBarHeight + 12;
+    const nav = document.querySelector('.mobile-nav');
+    const navVisible = nav && getComputedStyle(nav).display !== 'none';
+    const bottomLimit = navVisible ? nav.getBoundingClientRect().top : window.innerHeight;
+    const actions = card.querySelector('.quiz-actions, .completion-actions') || card;
+    const cardTop = card.getBoundingClientRect().top;
+    const actionsBottom = actions.getBoundingClientRect().bottom;
+
+    // 内容已经完整可见时不要乱滚；只有顶部被遮住或底部按钮被底栏遮住时才调整
+    const needsUp = cardTop < desiredTop - 4;
+    const needsDown = actionsBottom > bottomLimit - 8;
+    if (!needsUp && !needsDown) return;
+
+    const top = Math.max(0, card.getBoundingClientRect().top + window.scrollY - desiredTop);
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    window.scrollTo({ top, behavior });
+  });
+}
+
+function focusCurrentQuizOnEntry() {
+  // 刷题和考试以作答为主，进入时若选项/操作按钮被底栏遮住就自动上移；
+  // 背题模式保留顶部工具栏（显示/隐藏答案），不自动滚走。
+  if (currentView === 'practice') {
+    scrollToQuizCard(document.querySelector('.quiz-card') ? '.quiz-card' : '.completion-wrap');
+  } else if (currentView === 'exam' && state.exam.active) {
+    scrollToQuizCard('.exam-card');
+  }
 }
 
 function render() {
   currentView = getViewFromHash();
+  document.body.dataset.view = currentView;
   const app = $('#app');
   if (!app) return;
   if (!BANK.length) {
@@ -1416,14 +1462,14 @@ function renderPracticeQuestion(session, q) {
       <h2 class="q-stem" id="practice-stem">${esc(q.question)}</h2>
       <div class="q-hint">${hint}${!isAnswered && q.type === 'multiple' ? ' · <span id="selected-count">已选 ' + (selected ? selected.length : 0) + ' 项</span>' : ''}</div>
       <div class="options" role="group" aria-label="选项">${options}</div>
-      <div class="quiz-actions">
+      <div class="quiz-actions ${isAnswered ? 'has-next' : 'has-skip'}">
         <div class="quiz-actions-left">
           <button type="button" class="btn btn-ghost btn-prev" data-action="practice-prev" ${index === 0 ? 'disabled' : ''}>${icon('arrow-left')} 上一题</button>
         </div>
         <div class="quiz-actions-right">
           ${isAnswered
             ? `<button type="button" class="btn btn-primary btn-next" data-action="practice-next">${isLast ? '查看本轮结果' : '下一题'} ${icon('arrow-right')}</button>`
-            : `<button type="button" class="btn btn-ghost" data-action="practice-skip">跳过</button>
+            : `<button type="button" class="btn btn-ghost btn-skip" data-action="practice-skip">跳过</button>
                <button type="button" class="btn btn-primary" id="practice-submit" data-action="practice-submit" ${selected ? '' : 'disabled'}>提交答案 ${icon('check')}</button>`}
         </div>
       </div>
@@ -1595,7 +1641,7 @@ function movePractice(delta) {
   session.index = next;
   saveState();
   render();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  scrollToQuizCard(next >= session.ids.length ? '.completion-wrap' : '.quiz-card');
 }
 
 function jumpPractice(index) {
@@ -1605,7 +1651,7 @@ function jumpPractice(index) {
   session.index = target;
   saveState();
   render();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  scrollToQuizCard('.quiz-card');
 }
 
 function firstUnansweredPractice() {
@@ -1657,7 +1703,7 @@ function resetPracticeNow() {
   saveState(true);
   closeModal();
   render();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  scrollToQuizCard('.quiz-card');
   toast('已重新开始本轮练习。');
 }
 
@@ -1786,7 +1832,7 @@ function renderStudy() {
         <h2 class="q-stem">${esc(q.question)}</h2>
         <div class="options study-options" role="list">${options}</div>
         ${answerBlock}
-        <div class="quiz-actions">
+        <div class="quiz-actions has-next">
           <div class="quiz-actions-left">
             <button type="button" class="btn btn-ghost btn-prev" data-action="study-prev" ${index === 0 ? 'disabled' : ''}>${icon('arrow-left')} 上一题</button>
           </div>
@@ -2172,6 +2218,7 @@ function startExam(settings) {
   else navigate('exam');
   window.scrollTo({ top: 0, behavior: 'auto' });
   startExamTicker();
+  scrollToQuizCard('.exam-card');
 }
 
 function renderExamLive() {
@@ -2238,7 +2285,7 @@ function renderExamLive() {
         <h2 class="q-stem" id="exam-stem">${esc(q.question)}</h2>
         <div class="q-hint">${q.type === 'multiple' ? '多选题 · 选择所有你认为正确的选项' : '单选题 · 选择唯一正确答案'} · 选项会自动保存</div>
         <div class="options" role="group" aria-label="选项">${options}</div>
-        <div class="quiz-actions">
+        <div class="quiz-actions has-next">
           <div class="quiz-actions-left">
             <button type="button" class="btn btn-ghost btn-prev" data-action="exam-prev" ${active.index === 0 ? 'disabled' : ''}>${icon('arrow-left')} 上一题</button>
           </div>
@@ -2335,7 +2382,7 @@ function moveExam(delta) {
   active.index = next;
   saveState();
   render();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  scrollToQuizCard('.exam-card');
 }
 
 function jumpExam(index) {
@@ -2345,7 +2392,7 @@ function jumpExam(index) {
   saveState();
   closeModal();
   render();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  scrollToQuizCard('.exam-card');
 }
 
 function openExamSheet() {
@@ -3427,6 +3474,7 @@ window.addEventListener('hashchange', handleRoute);
 window.addEventListener('beforeunload', () => saveState(true));
 
 function init() {
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   if (!BANK.length) {
     render();
     return;
@@ -3437,6 +3485,14 @@ function init() {
   }
   currentView = initial;
   render();
+  focusCurrentQuizOnEntry();
+  // 部分手机浏览器在刷新后会在 load 之后再恢复滚动位置，再校正一次
+  window.addEventListener('load', () => {
+    if (currentView === 'practice' || (currentView === 'exam' && state.exam.active)) {
+      focusCurrentQuizOnEntry();
+    }
+  }, { once: true });
+  setTimeout(focusCurrentQuizOnEntry, 160);
 
   if (state.exam.active) {
     if (examRemaining() <= 0) {

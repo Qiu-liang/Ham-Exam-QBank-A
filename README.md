@@ -52,6 +52,11 @@ python3 -m http.server 8000
 - 源数据没有提供逐题解析，`explanation` 为根据标准答案生成的答案要点，
   可在 `js/data.js` 中替换为更详细的解析。
 
+## 部署
+
+这是一个纯静态站点，部署时只需要上传 `index.html`、`css/`、`js/`。
+完整的服务器部署步骤（Ubuntu + Nginx、HTTPS、对象存储、Cloudflare Pages 等）见 [DEPLOY.md](DEPLOY.md)。
+
 ## 功能
 
 - **刷题模式**：顺序 / 乱序、章节筛选、即时判题、解析、断点续刷、错题自动归档。
