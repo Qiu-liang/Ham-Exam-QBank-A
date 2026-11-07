@@ -3,16 +3,19 @@
 import json
 import math
 import sys
+from pathlib import Path
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
+ROOT = Path(__file__).resolve().parents[1]
+DATA = ROOT / "题库数据"
 SRC = [
-    ("A类-2025新版", "A类题库_2025新版.json"),
-    ("A类-2021旧版", "A类题库_2021旧版.json"),
+    ("A类-2025新版", DATA / "A类题库_2025新版.json"),
+    ("A类-2021旧版", DATA / "A类题库_2021旧版.json"),
 ]
-OUT = "A类业余无线电台操作证题库.xlsx"
+OUT = ROOT / "成品题库" / "A类业余无线电台操作证题库.xlsx"
 
 HEAD_FILL = PatternFill("solid", fgColor="1F4E79")
 HEAD_FONT = Font(name="微软雅黑", size=10, bold=True, color="FFFFFF")
@@ -150,7 +153,7 @@ def main():
         metas.append((sheet_name, data["meta"]))
         build_sheet(wb.create_sheet(sheet_name), data)
     build_info(info, metas)
-    wb.save(OUT)
+    wb.save(str(OUT))
     print("saved", OUT, [s.title for s in wb.worksheets], [s.max_row - 1 for s in wb.worksheets])
 
 
