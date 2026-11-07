@@ -7,7 +7,6 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "题库数据"
 SRC = [
     ("A 类题库（20250809 新版，683 题）", DATA / "A类题库_2025新版.json"),
-    ("A 类题库（20211022 旧版，380 题）", DATA / "A类题库_2021旧版.json"),
 ]
 OUT = ROOT / "成品题库" / "A类题库.md"
 

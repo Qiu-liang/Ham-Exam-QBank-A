@@ -1,6 +1,6 @@
 // Parse the A-class amateur radio exam question bank HTML into structured JSON + CSV.
 // Usage: node 脚本/parse.js <input.html> <output.json> <output.csv> [label]
-// 省略参数时默认读取 原始网页/a.html；相对路径按当前工作目录解析（建议在仓库根目录执行）。
+// 省略参数时默认读取 原始网页/a_2025.html；相对路径按当前工作目录解析（建议在仓库根目录执行）。
 const fs = require('fs');
 const path = require('path');
 
@@ -25,10 +25,10 @@ function clean(s) {
     .trim();
 }
 
-const file = process.argv[2] || path.join(ROOT, '原始网页', 'a.html');
-const outJson = process.argv[3] || path.join(ROOT, '题库数据', 'a_bank.json');
-const outCsv = process.argv[4] || path.join(ROOT, '题库数据', 'a_bank.csv');
-const label = process.argv[5] || '';
+const file = process.argv[2] || path.join(ROOT, '原始网页', 'a_2025.html');
+const outJson = process.argv[3] || path.join(ROOT, '题库数据', 'A类题库_2025新版.json');
+const outCsv = process.argv[4] || path.join(ROOT, '题库数据', 'A类题库_2025新版.csv');
+const label = process.argv[5] || 'a_2025';
 const html = fs.readFileSync(file, 'utf8');
 
 const dlRe = /<dl class="[^"]*" data-id="(\d+)">([\s\S]*?)<\/dl>/g;

@@ -13,7 +13,6 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "题库数据"
 SRC = [
     ("A类-2025新版", DATA / "A类题库_2025新版.json"),
-    ("A类-2021旧版", DATA / "A类题库_2021旧版.json"),
 ]
 OUT = ROOT / "成品题库" / "A类业余无线电台操作证题库.xlsx"
 
@@ -39,12 +38,6 @@ BANK_INFO = {
         scope="A类验证证书：30-3000MHz 频段，最大发射功率不大于 25W",
         url="https://exam.ham.upall.cn/?t=a_2025",
         count=683,
-    ),
-    "A类-2021旧版": dict(
-        set_desc="20211022 旧版（历史题库，仅供对比）",
-        scope="旧版 A 类题库，题型全部为单选",
-        url="https://exam.ham.upall.cn/?t=a",
-        count=380,
     ),
 }
 
